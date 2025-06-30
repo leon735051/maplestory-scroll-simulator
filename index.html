@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapleStory 墊捲模擬器</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: url('https://i.imgur.com/XvKQJ5t.png') center/cover,
+                        linear-gradient(45deg, #87CEEB, #E0F6FF, #98FB98, #F0FFF0);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2C1810;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(1px);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 248, 220, 0.95);
+            border: 4px solid #8B4513;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3),
+                        inset 0 0 20px rgba(255, 215, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4169E1, #1E90FF, #87CEEB);
+            padding: 30px;
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            border-bottom: 3px solid #000080;
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0px #000080,
+                         6px 6px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            font-weight: 500;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            padding: 30px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="%23E6E6FA" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        }
+
+        .total-stats {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #4B0082, #8A2BE2, #9370DB);
+            color: white;
+            border: 3px solid #2F1B69;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(75, 0, 130, 0.4);
+            position: relative;
+        }
+
+        .total-stats::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
+            border-radius: 15px;
+            z-index: -1;
+        }
+
+        .scroll-section {
+            background: linear-gradient(135deg, #FFF8DC, #FFFACD);
+            border: 3px solid #8B4513;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(139, 69, 19, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scroll-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="none" stroke="%23DDD" stroke-width="2" opacity="0.3"/><circle cx="50" cy="50" r="20" fill="none" stroke="%23DDD" stroke-width="1" opacity="0.2"/></svg>');
+            opacity: 0.1;
+        }
+
+        .scroll-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .scroll-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #8B4513;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scroll-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .scroll-10 .scroll-icon {
+            background: linear-gradient(135deg, #8A2BE2, #4B0082);
+        }
+
+        .scroll-60 .scroll-icon {
+            background: linear-gradient(135deg, #FF1493, #DC143C);
+        }
+
+        .scroll-title {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #2C1810;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .scroll-rate {
+            font-size: 1.1rem;
+            color: #8B4513;
+            margin-top: 5px;
+            font-weight: 700;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #F0F8FF, #E6E6FA);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #4169E1;
+            box-shadow: 0 4px 10px rgba(65, 105, 225, 0.2);
+            position: relative;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #FFD700, transparent);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #000080;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #4B0082;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: 3px solid #8B4513;
+            border-radius: 12px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-use {
+            background: linear-gradient(135deg, #32CD32, #228B22);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-use:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(50, 205, 50, 0.4);
+            background: linear-gradient(135deg, #3CB371, #2E8B57);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #FF6347, #DC143C);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 99, 71, 0.4);
+            background: linear-gradient(135deg, #FF4500, #B22222);
+        }
+
+        .log-section {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #FFF8DC, #FFFACD);
+            border: 3px solid #8B4513;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(139, 69, 19, 0.3);
+            max-height: 450px;
+        }
+
+        .log-header {
+            font-size: 1.4rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+            color: #2C1810;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .log-content {
+            background: linear-gradient(135deg, #F5F5DC, #FAEBD7);
+            border: 2px solid #D2691E;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 320px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .log-entry {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.4s ease;
+            border-left: 4px solid;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .log-entry.success {
+            background: linear-gradient(135deg, #90EE90, #98FB98);
+            color: #006400;
+            border-left-color: #228B22;
+            box-shadow: 0 3px 10px rgba(34, 139, 34, 0.3);
+        }
+
+        .log-entry.failure {
+            background: linear-gradient(135deg, #FFB6C1, #FFC0CB);
+            color: #8B0000;
+            border-left-color: #DC143C;
+            box-shadow: 0 3px 10px rgba(220, 20, 60, 0.3);
+        }
+
+        .log-icon {
+            font-size: 1.4rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .empty-log {
+            text-align: center;
+            color: #8B4513;
+            font-style: italic;
+            padding: 30px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scroll-icon {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        .total-stats h3 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .total-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .total-card {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .total-card .stat-value {
+            color: white;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .total-card .stat-label {
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* 卷軸圖片樣式 */
+        .scroll-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        /* 成功/失敗特效 */
+        .success-effect {
+            animation: successPulse 0.6s ease-in-out;
+        }
+
+        .failure-effect {
+            animation: failurePulse 0.6s ease-in-out;
+        }
+
+        @keyframes successPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 139, 34, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(34, 139, 34, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 139, 34, 0); }
+        }
+
+        @keyframes failurePulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 20, 60, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(220, 20, 60, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 20, 60, 0); }
+        }
+
+        /* 自定義滾動條 */
+        .log-content::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .log-content::-webkit-scrollbar-track {
+            background: #D2691E;
+            border-radius: 6px;
+        }
+
+        .log-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border-radius: 6px;
+            border: 2px solid #D2691E;
+        }
+
+        .log-content::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #A0522D, #CD853F);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍁 MapleStory 墊捲模擬器</h1>
+            <p>體驗真實的強化卷軸系統，測試你的運氣！</p>
+        </div>
+
+        <div class="main-content">
+            <div class="total-stats">
+                <h3>📊 總體統計</h3>
+                <div class="total-grid">
+                    <div class="total-card">
+                        <div class="stat-value" id="totalUsed">0</div>
+                        <div class="stat-label">總使用次數</div>
+                    </div>
+                    <div class="total-card">
+                        <div class="stat-value" id="totalSuccess">0</div>
+                        <div class="stat-label">總成功次數</div>
+                    </div>
+                    <div class="total-card">
+                        <div class="stat-value" id="totalSuccessRate">0%</div>
+                        <div class="stat-label">總成功率</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scroll-section scroll-10">
+                <div class="scroll-header">
+                    <div class="scroll-icon">
+                        <img src="https://i.imgur.com/k8QJ9mZ.png" alt="10% 卷軸" class="scroll-img" onerror="this.style.display='none'; this.parentElement.innerHTML='📜';">
+                    </div>
+                    <div>
+                        <div class="scroll-title">10% 強化卷軸</div>
+                        <div class="scroll-rate">成功率: 10%</div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="used10">0</div>
+                        <div class="stat-label">使用次數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="success10">0</div>
+                        <div class="stat-label">成功次數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="failure10">0</div>
+                        <div class="stat-label">失敗次數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="rate10">0%</div>
+                        <div class="stat-label">實際成功率</div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-use" onclick="useScroll(10)">🎯 使用卷軸</button>
+                    <button class="btn btn-reset" onclick="resetStats(10)">🔄 重置統計</button>
+                </div>
+            </div>
+
+            <div class="scroll-section scroll-60">
+                <div class="scroll-header">
+                    <div class="scroll-icon">
+                        <img src="https://i.imgur.com/9xJ8KqL.png" alt="60% 卷軸" class="scroll-img" onerror="this.style.display='none'; this.parentElement.innerHTML='📃';">
+                    </div>
+                    <div>
+                        <div class="scroll-title">60% 強化卷軸</div>
+                        <div class="scroll-rate">成功率: 60%</div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="used60">0</div>
+                        <div class="stat-label">使用次數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="success60">0</div>
+                        <div class="stat-label">成功次數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="failure60">0</div>
+                        <div class="stat-label">失敗次數</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="rate60">0%</div>
+                        <div class="stat-label">實際成功率</div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-use" onclick="useScroll(60)">🎯 使用卷軸</button>
+                    <button class="btn btn-reset" onclick="resetStats(60)">🔄 重置統計</button>
+                </div>
+            </div>
+
+            <div class="log-section">
+                <div class="log-header">
+                    📋 使用紀錄
+                    <button class="btn btn-reset" onclick="clearLog()" style="margin-left: auto; flex: none; padding: 10px 18px; font-size: 0.9rem;">清空紀錄</button>
+                </div>
+                <div class="log-content" id="logContent">
+                    <div class="empty-log">還沒有使用記錄，快來試試你的運氣吧！</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲狀態
+        let gameStats = {
+            10: { used: 0, success: 0, failure: 0 },
+            60: { used: 0, success: 0, failure: 0 }
+        };
+
+        let logs = [];
+
+        // 從 localStorage 讀取數據
+        function loadStats() {
+            const saved = localStorage.getItem('mapleScrollStats');
+            if (saved) {
+                gameStats = JSON.parse(saved);
+                updateAllDisplays();
+            }
+
+            const savedLogs = localStorage.getItem('mapleScrollLogs');
+            if (savedLogs) {
+                logs = JSON.parse(savedLogs);
+                updateLogDisplay();
+            }
+        }
+
+        // 保存數據到 localStorage
+        function saveStats() {
+            localStorage.setItem('mapleScrollStats', JSON.stringify(gameStats));
+            localStorage.setItem('mapleScrollLogs', JSON.stringify(logs));
+        }
+
+        // 使用卷軸
+        function useScroll(percentage) {
+            const isSuccess = Math.random() * 100 < percentage;
+            
+            gameStats[percentage].used++;
+            if (isSuccess) {
+                gameStats[percentage].success++;
+            } else {
+                gameStats[percentage].failure++;
+            }
+
+            // 添加到日誌
+            const timestamp = new Date().toLocaleTimeString('zh-TW');
+            logs.unshift({
+                time: timestamp,
+                type: percentage,
+                success: isSuccess
+            });
+
+            // 限制日誌數量
+            if (logs.length > 100) {
+                logs = logs.slice(0, 100);
+            }
+
+            updateAllDisplays();
+            saveStats();
+
+            // 添加動畫效果
+            animateButton(percentage, isSuccess);
+            animateSection(percentage, isSuccess);
+        }
+
+        // 按鈕動畫效果
+        function animateButton(percentage, isSuccess) {
+            const section = document.querySelector(`.scroll-${percentage}`);
+            const button = section.querySelector('.btn-use');
+            
+            button.style.transform = 'scale(0.95)';
+            button.style.backgroundColor = isSuccess ? '#228B22' : '#DC143C';
+            button.textContent = isSuccess ? '✅ 成功！' : '❌ 失敗！';
+            
+            setTimeout(() => {
+                button.style.transform = '';
+                button.style.backgroundColor = '';
+                button.textContent = '🎯 使用卷軸';
+            }, 1200);
+        }
+
+        // 區塊動畫效果
+        function animateSection(percentage, isSuccess) {
+            const section = document.querySelector(`.scroll-${percentage}`);
+            const effectClass = isSuccess ? 'success-effect' : 'failure-effect';
+            
+            section.classList.add(effectClass);
+            setTimeout(() => {
+                section.classList.remove(effectClass);
+            }, 600);
+        }
+
+        // 更新所有顯示
+        function updateAllDisplays() {
+            updateStats(10);
+            updateStats(60);
+            updateTotalStats();
+            updateLogDisplay();
+        }
+
+        // 更新統計顯示
+        function updateStats(percentage) {
+            const stats = gameStats[percentage];
+            const rate = stats.used > 0 ? ((stats.success / stats.used) * 100).toFixed(1) : 0;
+
+            document.getElementById(`used${percentage}`).textContent = stats.used;
+            document.getElementById(`success${percentage}`).textContent = stats.success;
+            document.getElementById(`failure${percentage}`).textContent = stats.failure;
+            document.getElementById(`rate${percentage}`).textContent = rate + '%';
+        }
+
+        // 更新總統計
+        function updateTotalStats() {
+            const totalUsed = gameStats[10].used + gameStats[60].used;
+            const totalSuccess = gameStats[10].success + gameStats[60].success;
+            const totalRate = totalUsed > 0 ? ((totalSuccess / totalUsed) * 100).toFixed(1) : 0;
+
+            document.getElementById('totalUsed').textContent = totalUsed;
+            document.getElementById('totalSuccess').textContent = totalSuccess;
+            document.getElementById('totalSuccessRate').textContent = totalRate + '%';
+        }
+
+        // 更新日誌顯示
+        function updateLogDisplay() {
+            const logContent = document.getElementById('logContent');
+            
+            if (logs.length === 0) {
+                logContent.innerHTML = '<div class="empty-log">還沒有使用記錄，快來試試你的運氣吧！</div>';
+                return;
+            }
+
+            const logHtml = logs.map(log => {
+                const typeText = log.type === 10 ? '10%卷軸' : '60%卷軸';
+                const resultClass = log.success ? 'success' : 'failure';
+                const resultIcon = log.success ? '✅' : '❌';
+                const resultText = log.success ? '成功' : '失敗';
+                
+                return `
+                    <div class="log-entry ${resultClass}">
+                        <span class="log-icon">${resultIcon}</span>
+                        <span>[${log.time}] 使用 ${typeText} - ${resultText}</span>
+                    </div>
+                `;
+            }).join('');
+
+            logContent.innerHTML = logHtml;
+        }
+
+        // 重置統計
+        function resetStats(percentage) {
+            if (confirm(`確定要重置 ${percentage}% 卷軸的統計數據嗎？`)) {
+                gameStats[percentage] = { used: 0, success: 0, failure: 0 };
+                updateAllDisplays();
+                saveStats();
+            }
+        }
+
+        // 清空日誌
+        function clearLog() {
+            if (confirm('確定要清空所有使用紀錄嗎？')) {
+                logs = [];
+                updateLogDisplay();
+                saveStats();
+            }
+        }
+
+        // 預載入圖片
+        function preloadImages() {
+            const images = [
+                'https://i.imgur.com/k8QJ9mZ.png',
+                'https://i.imgur.com/9xJ8KqL.png',
+                'https://i.imgur.com/XvKQJ5t.png'
+            ];
+            
+            images.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            preloadImages();
+        });
+    </script>
+</body>
